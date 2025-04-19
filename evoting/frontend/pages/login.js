@@ -1,34 +1,99 @@
-import { useState } from 'react'
-import axios from 'axios'
-import { setAuth } from "../lib/api"
-export default function Login(){
-  const [email,setEmail]=useState('');const[pw,setPw]=useState('');
-  const[needOtp,setNeedOtp]=useState(false);const[otp,setOtp]=useState('');
-  const[msg,setMsg]=useState('');
-  async function step1(){
-    try{await axios.post(process.env.NEXT_PUBLIC_API_URL+'/api/auth/login',{email,password:pw});setNeedOtp(true);}catch(e){setMsg('Error');}
-  }
-  async function step2(){
-    try{const res=await axios.post(process.env.NEXT_PUBLIC_API_URL+'/api/auth/otp',{email,otp});localStorage.setItem('token',res.data.access_token);setMsg('Logged In');}catch(e){setMsg('OTP error');}
-  }
-  if (res.data.access_token) {
-    setAuth(res.data.access_token);            // NEW
-    const payload = JSON.parse(atob(res.data.access_token.split(".")[1]));
-    if (payload.adm) window.location.href = "/admin";
-    else window.location.href = "/vote";
-  }
-  
-  return <div className="max-w-lg p-8 mx-auto">
-    {!needOtp?<>
-      <h2 className="text-xl mb-4">Login</h2>
-      <input className="border p-2 w-full mb-2" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/>
-      <input type="password" className="border p-2 w-full mb-2" placeholder="Password" value={pw} onChange={e=>setPw(e.target.value)}/>
-      <button className="bg-green-600 text-white px-4 py-2" onClick={step1}>Send OTP</button>
-    </>:<>
-      <h2 className="text-xl mb-4">Enter OTP</h2>
-      <input className="border p-2 w-full mb-2" placeholder="123456" value={otp} onChange={e=>setOtp(e.target.value)}/>
-      <button className="bg-indigo-600 text-white px-4 py-2" onClick={step2}>Verify</button>
-    </>}
-    <p className="mt-4">{msg}</p>
-  </div>
-}
+// frontend/pages/login.js
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
+import Layout from '../components/Layout';
+
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState(1); // 1: credentials, 2: OTP
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleCredentialsSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('/api/auth/login', { email, password });
+      setStep(2);
+      setError('');
+    } catch (err) {
+      setError('Invalid credentials. Please try again.');
+    }
+  };
+
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('/api/auth/otp', { email, otp });
+      localStorage.setItem('token', response.data.access_token);
+      router.push('/vote');
+    } catch (err) {
+      setError('Invalid OTP. Please try again.');
+    }
+  };
+
+  return (
+    <Layout>
+      <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">Login</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {step === 1 ? (
+          <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 font-medium">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                aria-label="Email"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                aria-label="Password"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              Next
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleOtpSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 font-medium">Enter OTP</label>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                aria-label="One-Time Password"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              Verify OTP
+            </button>
+          </form>
+        )}
+      </div>
+    </Layout>
+  );
+};
+
+export default Login;
