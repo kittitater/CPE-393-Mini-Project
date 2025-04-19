@@ -1,17 +1,12 @@
-import random, string, time
-from app.core.config import settings
+import pyotp
 
-_OTPS = {}  # email -> (otp, expiry)
 
-def gen_otp(email: str):
-    otp = ''.join(random.choices(string.digits, k=6))
-    _OTPS[email] = (otp, time.time() + settings.OTP_TTL_SEC)
-    print(f"[DEBUG] OTP for {email}: {otp}")  # TODO: send via email/SMS
-    return otp
+def generate_secret() -> str:
+    """Generate base32 secret for TOTP."""
+    return pyotp.random_base32()
 
-def verify_otp(email: str, code: str):
-    record = _OTPS.get(email)
-    if not record: return False
-    otp, exp = record
-    if time.time() > exp: return False
-    return otp == code
+
+def verify(code: str, secret: str) -> bool:
+    """Return True if the provided code is valid for the secret."""
+    totp = pyotp.TOTP(secret)
+    return totp.verify(code, valid_window=1)  # ±30 s tolerance

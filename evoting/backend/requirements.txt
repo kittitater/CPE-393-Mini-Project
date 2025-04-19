@@ -5,3 +5,8 @@ asyncpg
 python-jose[cryptography]
 passlib[bcrypt]
 pydantic
+pyotp         # TOTP 2‑factor
+python-multipart
+aiosmtplib      # async SMTP client
+python-dotenv   # optional env loader
+pandas          # CSV export
