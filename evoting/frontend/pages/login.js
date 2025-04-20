@@ -33,25 +33,46 @@ export default function Login() {
       setError('❌ Invalid OTP.');
     }
   };
-
   return (
     <Layout>
-      <div className="max-w-md mx-auto mt-12 p-8 bg-glass-white rounded-xl shadow-md border border-white/10">
-        <h2 className="text-3xl text-cyber mb-6 text-center">Login</h2>
+      <div className="max-w-md mx-auto mt-12 p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/10">
+        <h2 className="text-3xl text-cyber mb-6 text-center animate-glow">Login</h2>
+        
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+  
         {step === 1 ? (
           <form onSubmit={handleCredentials} className="space-y-4">
-            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
+            />
             <button className="btn w-full">Next</button>
           </form>
         ) : (
           <form onSubmit={handleOtp} className="space-y-4">
-            <input type="text" placeholder="Enter OTP" value={otp} onChange={e => setOtp(e.target.value)} required />
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
+            />
             <button className="btn w-full">Verify OTP</button>
           </form>
         )}
       </div>
     </Layout>
-  );
-}
+  );}  

@@ -39,43 +39,52 @@ export default function Register() {
 
   return (
     <Layout>
-      <div className="max-w-md mx-auto mt-12 p-8 bg-glass-white rounded-xl shadow-md border border-white/10">
-        <h2 className="text-3xl text-cyber mb-6 text-center">Register</h2>
+      <div className="max-w-md mx-auto mt-12 p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/10">
+        <h2 className="text-3xl text-cyber mb-6 text-center animate-glow">Register</h2>
+
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
         {step === 1 ? (
           <form onSubmit={handleRegister} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
-          />
-          <button className="btn w-full">Register</button>
-        </form>
-        
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
+            />
+            <button className="btn w-full">Register</button>
+          </form>
         ) : (
           <>
-            <p className="text-center mb-3">Scan the QR code with your authenticator app:</p>
+            <p className="text-center mb-3 text-sm text-gray-300">
+              Scan this QR code with your authenticator app:
+            </p>
             <div className="flex justify-center mb-4">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(otpUri)}`}
                 alt="OTP QR"
-                className="rounded-lg border p-1 shadow-lg"
+                className="rounded-lg border p-1 shadow-[0_0_15px_#00ddeb]"
               />
             </div>
             <form onSubmit={handleOtpVerify} className="space-y-4">
-              <input type="text" placeholder="Enter OTP" value={otp} onChange={e => setOtp(e.target.value)} required />
+              <input
+                type="text"
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={e => setOtp(e.target.value)}
+                required
+                className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
+              />
               <button className="btn w-full">Verify & Continue</button>
             </form>
           </>
