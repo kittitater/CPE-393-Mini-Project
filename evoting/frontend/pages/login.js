@@ -58,7 +58,7 @@ export default function Login() {
               required
               className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
             />
-            <button className="btn w-full">Next</button>
+            <button className="btn w-full">Login</button>
           </form>
         ) : (
           <form onSubmit={handleOtp} className="space-y-4">
@@ -69,10 +69,20 @@ export default function Login() {
               onChange={(e) => setOtp(e.target.value)}
               required
               className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
-              />
+            />
             <button className="btn w-full">Verify OTP</button>
           </form>
         )}
+
+        <div className="text-center mt-4 text-sm text-gray-400">
+          Don’t have an account?{' '}
+          <span
+            onClick={() => router.push('/register')}
+            className="text-cyber hover:underline cursor-pointer"
+          >
+            Register
+          </span>
+        </div>
       </div>
     </Layout>
   );

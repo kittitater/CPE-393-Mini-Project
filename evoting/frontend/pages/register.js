@@ -20,10 +20,19 @@ export default function Register() {
       setOtpUri(res.data.otp_uri);
       setStep(2);
       setError('');
-    } catch {
-      setError('❌ Registration failed.');
+    } catch (err) {
+      console.error("Register error:", err.response?.data); // <-- LOG THIS
+      const detail = err.response?.data?.detail;
+  
+      if (detail === 'Email already in use') {
+        setError('⚠️ This email is already registered. You can login instead.');
+      } else {
+        setError('❌ Registration failed. Please try again.');
+      }
     }
   };
+
+  
 
   const handleOtpVerify = async (e) => {
     e.preventDefault();
@@ -40,8 +49,21 @@ export default function Register() {
     <Layout>
       <div className="max-w-md mx-auto mt-12 p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/10">
         <h2 className="text-3xl text-cyber mb-6 text-center animate-glow">Register</h2>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
+        {error && (
+  <div className="text-red-500 text-center mb-4">
+    {error}
+    {(error.includes("already registered") || error.includes("already in use")) && (
+      <div className="mt-2 text-sm">
+        <span
+          className="text-cyber hover:underline cursor-pointer"
+          onClick={() => router.push('/login')}
+        >
+          ➜ Go to Login
+        </span>
+      </div>
+    )}
+  </div>
+)}
         {step === 1 ? (
           <form onSubmit={handleRegister} className="space-y-4">
             <input
@@ -82,11 +104,21 @@ export default function Register() {
                 onChange={(e) => setOtp(e.target.value)}
                 required
                 className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
-                />
+              />
               <button className="btn w-full">Verify & Continue</button>
             </form>
           </>
         )}
+
+        <div className="text-center mt-4 text-sm text-gray-400">
+          Already have an account?{' '}
+          <span
+            onClick={() => router.push('/login')}
+            className="text-cyber hover:underline cursor-pointer"
+          >
+            Login
+          </span>
+        </div>
       </div>
     </Layout>
   );
