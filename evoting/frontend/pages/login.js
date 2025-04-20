@@ -1,4 +1,3 @@
-// pages/login.js
 import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -11,11 +10,12 @@ export default function Login() {
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const router = useRouter();
+  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const handleCredentials = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/auth/login', { email, password });
+      await axios.post(`${API_BASE}/api/auth/login`, { email, password });
       setStep(2);
       setError('');
     } catch {
@@ -26,20 +26,20 @@ export default function Login() {
   const handleOtp = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/auth/otp', { email, otp });
+      const res = await axios.post(`${API_BASE}/api/auth/otp`, { email, otp });
       localStorage.setItem('token', res.data.access_token);
       router.push('/vote');
     } catch {
       setError('❌ Invalid OTP.');
     }
   };
+
   return (
     <Layout>
       <div className="max-w-md mx-auto mt-12 p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/10">
         <h2 className="text-3xl text-cyber mb-6 text-center animate-glow">Login</h2>
-        
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-  
+
         {step === 1 ? (
           <form onSubmit={handleCredentials} className="space-y-4">
             <input
@@ -49,7 +49,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
-              />
+            />
             <input
               type="password"
               placeholder="Password"
@@ -57,7 +57,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
-              />
+            />
             <button className="btn w-full">Next</button>
           </form>
         ) : (
@@ -68,11 +68,12 @@ export default function Login() {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               required
-              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
-            />
+              className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
+              />
             <button className="btn w-full">Verify OTP</button>
           </form>
         )}
       </div>
     </Layout>
-  );}  
+  );
+}

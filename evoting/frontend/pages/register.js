@@ -1,4 +1,3 @@
-// pages/register.js
 import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -41,7 +40,6 @@ export default function Register() {
     <Layout>
       <div className="max-w-md mx-auto mt-12 p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/10">
         <h2 className="text-3xl text-cyber mb-6 text-center animate-glow">Register</h2>
-
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
         {step === 1 ? (
@@ -50,18 +48,18 @@ export default function Register() {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
-              />
+            />
             <input
               type="password"
               placeholder="Password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
-              />
+            />
             <button className="btn w-full">Register</button>
           </form>
         ) : (
@@ -81,10 +79,10 @@ export default function Register() {
                 type="text"
                 placeholder="Enter OTP"
                 value={otp}
-                onChange={e => setOtp(e.target.value)}
+                onChange={(e) => setOtp(e.target.value)}
                 required
-                className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-cyber placeholder-gray-400"
-              />
+                className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
+                />
               <button className="btn w-full">Verify & Continue</button>
             </form>
           </>
