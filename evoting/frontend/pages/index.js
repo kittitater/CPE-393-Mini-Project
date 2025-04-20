@@ -1,25 +1,28 @@
-// frontend/pages/index.js
-import React from 'react';
+// pages/index.js
 import Link from 'next/link';
 import Layout from '../components/Layout';
 
-const Home = () => {
+export default function Home() {
   return (
     <Layout>
-      <div className="text-center py-10">
-        <h2 className="text-4xl font-bold mb-6 text-gray-800">Welcome to Secure E-Voting</h2>
-        <p className="text-lg mb-8 text-gray-600">Cast your vote securely and easily.</p>
-        <div className="flex justify-center gap-6">
-          <Link href="/login">
-            <a className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition">Login</a>
-          </Link>
-          <Link href="/register">
-            <a className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition">Register</a>
-          </Link>
+      <div className="flex items-center justify-center min-h-[60vh] px-6">
+        <div className="glass max-w-xl w-full p-10 text-center animate-fade-in-up">
+          <h1 className="text-5xl text-cyber font-bold animate-glow mb-6 drop-shadow-lg tracking-widest">
+            Secure E‑Voting
+          </h1>
+          <p className="text-gray-300 text-md sm:text-lg mb-8">
+            Welcome to the future of voting — secure, private, and blazing fast ⚡
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/login" passHref>
+              <button className="btn animate-pulse w-full sm:w-auto">Login</button>
+            </Link>
+            <Link href="/register" passHref>
+              <button className="btn animate-pulse w-full sm:w-auto">Register</button>
+            </Link>
+          </div>
         </div>
       </div>
     </Layout>
   );
-};
-
-export default Home;
+}

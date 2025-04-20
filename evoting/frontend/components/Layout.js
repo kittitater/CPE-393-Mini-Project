@@ -1,24 +1,31 @@
-// frontend/components/Layout.js
-import React from 'react';
+// components/Layout.js
 import Head from 'next/head';
 
-const Layout = ({ children }) => {
+export default function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="flex flex-col min-h-screen bg-gradient-radial from-cyber-bg via-cyber-dark to-[#0f172a] text-white font-orbitron overflow-x-hidden">
       <Head>
-        <title>Secure E-Voting System</title>
-        <meta name="description" content="A secure and user-friendly e-voting platform" />
+        <title>Secure E‑Voting</title>
+        <meta name="description" content="Secure futuristic voting system" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <header className="bg-blue-600 text-white p-4 shadow-md">
-        <h1 className="text-2xl font-bold">Secure E-Voting System</h1>
+
+      {/* HEADER */}
+      <header className="bg-white/5 backdrop-blur-md py-5 text-center shadow-md border-b border-white/10 animate-glow">
+        <h1 className="text-3xl sm:text-4xl text-cyber font-bold tracking-widest animate-glow">
+          E‑VOTING SYSTEM
+        </h1>
       </header>
-      <main className="flex-grow p-6">{children}</main>
-      <footer className="bg-blue-600 text-white p-4 text-center">
-        &copy; 2023 Secure E-Voting System
+
+      {/* MAIN */}
+      <main className="flex-grow flex items-center justify-center px-4 py-10">
+        {children}
+      </main>
+
+      {/* FOOTER - STICK TO BOTTOM */}
+      <footer className="bg-white/5 backdrop-blur-md py-4 text-center text-sm text-gray-400 tracking-wider border-t border-white/10 animate-glow">
+        © {new Date().getFullYear()} Roverant Cyber Voting • All Rights Reserved
       </footer>
     </div>
   );
-};
-
-export default Layout;
+}

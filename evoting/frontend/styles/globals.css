@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+body {
+  @apply font-orbitron bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-gray-200 min-h-screen;
+}
+
+h1, h2, h3 {
+  @apply text-cyber font-bold tracking-wider drop-shadow-md;
+}
+
+input, textarea {
+  @apply bg-white/10 border border-white/20 text-gray-100 p-2 rounded backdrop-blur placeholder-gray-400;
+}
+input:focus, textarea:focus {
+  @apply outline-none border-cyber ring-2 ring-cyber shadow-lg;
+}
+
+button, .btn {
+  @apply bg-cyber text-cyber-dark font-bold uppercase py-2 px-5 rounded transition-all duration-300 transform hover:bg-[#00b7c3] hover:scale-105 shadow-md;
+}
+
+.glass {
+  @apply bg-white/5 backdrop-blur border border-white/10 shadow-md rounded-xl;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px #00ddeb, 0 0 10px #00ddeb;
+  }
+  to {
+    text-shadow: 0 0 15px #00ddeb, 0 0 30px #00ddeb;
+  }
+}
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+

@@ -1,11 +1,10 @@
-
-// frontend/pages/vote.js
-import React, { useEffect, useState } from 'react';
+// pages/vote.js
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 
-const Vote = () => {
+export default function Vote() {
   const [elections, setElections] = useState([]);
   const [selectedElection, setSelectedElection] = useState(null);
   const [candidates, setCandidates] = useState([]);
@@ -15,167 +14,98 @@ const Vote = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchElections = async () => {
-      try {
-        const response = await axios.get('/api/vote/elections', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        setElections(response.data);
-      } catch (err) {
-        setError('Failed to load elections. Please log in again.');
+    axios
+      .get('/api/vote/elections', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      })
+      .then((res) => setElections(res.data))
+      .catch(() => {
+        setError('⚠️ Failed to load elections. Login again.');
         router.push('/login');
-      }
-    };
-    fetchElections();
+      });
   }, [router]);
 
-  const handleElectionSelect = async (electionId) => {
+  const loadCandidates = async (electionId) => {
     setSelectedElection(electionId);
     try {
-      const response = await axios.get(`/api/vote/candidates?election_id=${electionId}`, {
+      const res = await axios.get(`/api/vote/candidates?election_id=${electionId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      setCandidates(response.data);
-      setError('');
-    } catch (err) {
-      setError('Failed to load candidates.');
+      setCandidates(res.data);
+    } catch {
+      setError('❌ Failed to load candidates');
     }
   };
 
-  const handleVote = async () => {
-    if (!selectedCandidate) {
-      setError('Please select a candidate.');
-      return;
-    }
+  const submitVote = async () => {
+    if (!selectedCandidate) return setError('Please select a candidate.');
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         '/api/vote/cast',
         { candidate_id: selectedCandidate },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
-      setReceipt(response.data.receipt);
-      setError('');
-    } catch (err) {
-      setError('Failed to cast vote. Please try again.');
+      setReceipt(res.data.receipt);
+    } catch {
+      setError('❌ Failed to cast vote');
     }
   };
 
   return (
     <Layout>
-      <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Cast Your Vote</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+      <div className="max-w-3xl mx-auto p-6 bg-glass-white rounded-xl shadow-lg border border-white/10">
+        <h2 className="text-3xl text-cyber text-center mb-6">🗳️ Cast Your Vote</h2>
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
         {!selectedElection ? (
-          <div>
-            <h3 className="text-xl mb-4 font-medium">Select an Election</h3>
-            <ul className="space-y-3">
-              {elections.map((election) => (
-                <li key={election.id}>
-                  <button
-                    onClick={() => handleElectionSelect(election.id)}
-                    className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-                  >
-                    {election.name}
-                  </button>
-                </li>
+          <>
+            <h3 className="text-xl mb-4 text-center">Select Election</h3>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {elections.map((e) => (
+                <button
+                  key={e.id}
+                  onClick={() => loadCandidates(e.id)}
+                  className="p-4 rounded-lg bg-white/10 hover:bg-cyber text-white text-lg transition font-bold tracking-wide border border-white/20"
+                >
+                  {e.name}
+                </button>
               ))}
-            </ul>
+            </div>
+          </>
+        ) : receipt ? (
+          <div className="text-center">
+            <h3 className="text-green-400 text-xl mb-3">✅ Vote Cast Successfully</h3>
+            <p className="text-sm">Receipt Code:</p>
+            <code className="bg-black/30 p-3 rounded block mt-2">{receipt}</code>
           </div>
-        ) : !receipt ? (
-          <div>
-            <h3 className="text-xl mb-4 font-medium">Select a Candidate</h3>
-            <ul className="space-y-3">
-              {candidates.map((candidate) => (
-                <li key={candidate.id} className="flex items-center">
+        ) : (
+          <>
+            <h3 className="text-xl mb-4 text-center">Select Candidate</h3>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {candidates.map((c) => (
+                <label
+                  key={c.id}
+                  className={`cursor-pointer p-4 rounded-lg border text-center font-semibold transition ${
+                    selectedCandidate === c.id
+                      ? 'border-cyber bg-cyber/20 text-cyber'
+                      : 'border-white/20 bg-white/5 hover:border-cyber'
+                  }`}
+                >
                   <input
                     type="radio"
                     name="candidate"
-                    value={candidate.id}
-                    onChange={() => setSelectedCandidate(candidate.id)}
-                    className="mr-2"
-                    aria-label={`Select ${candidate.name}`}
+                    className="hidden"
+                    checked={selectedCandidate === c.id}
+                    onChange={() => setSelectedCandidate(c.id)}
                   />
-                  <span>{candidate.name}</span>
-                </li>
+                  {c.name}
+                </label>
               ))}
-            </ul>
-            <button
-              onClick={handleVote}
-              className="w-full bg-green-500 text-white py-2 rounded-lg mt-6 hover:bg-green-600 transition"
-            >
-              Cast Vote
-            </button>
-          </div>
-        ) : (
-          <div className="text-center">
-            <h3 className="text-xl mb-4 font-medium text-green-600">Vote Cast Successfully</h3>
-            <p className="text-gray-700">Your receipt: <strong>{receipt}</strong></p>
-            <p className="text-gray-600 mt-2">Save this receipt to verify your vote later.</p>
-          </div>
+            </div>
+            <button onClick={submitVote} className="btn w-full mt-6">Submit Vote</button>
+          </>
         )}
       </div>
     </Layout>
   );
-};
-
-export default Vote;
-
-
-
-
-
-
-// Old files not use
-
-
-
-// import { useEffect, useState } from "react";
-// import { api, setAuth } from "../lib/api";
-
-// export default function Vote() {
-//   const [cands, setCands] = useState([]);
-//   const [receipt, setReceipt] = useState("");
-//   useEffect(() => {
-//     const token = localStorage.getItem("token");
-//     if (token) setAuth(token);
-//     api.get("/api/vote/candidates").then((r) => setCands(r.data));
-//   }, []);
-
-//   async function cast(id) {
-//     const token = localStorage.getItem("token");
-//     if (!token) return alert("Not logged");
-//     const res = await api.post("/api/vote/cast", null, {
-//       params: { candidate_id: id },
-//     });
-//     setReceipt(res.data.receipt);
-//   }
-
-//   return (
-//     <div className="max-w-xl mx-auto p-8">
-//       <h1 className="text-2xl font-bold mb-6">Vote</h1>
-//       {!receipt ? (
-//         <ul className="space-y-3">
-//           {cands.map((c) => (
-//             <li
-//               key={c.id}
-//               className="p-4 bg-white shadow flex justify-between rounded"
-//             >
-//               {c.name}
-//               <button
-//                 onClick={() => cast(c.id)}
-//                 className="bg-blue-600 text-white px-4 py-1 rounded"
-//               >
-//                 Select
-//               </button>
-//             </li>
-//           ))}
-//         </ul>
-//       ) : (
-//         <>
-//           <h2 className="text-lg font-semibold mb-2">Your Receipt</h2>
-//           <code className="block p-4 bg-gray-100 rounded text-lg">{receipt}</code>
-//         </>
-//       )}
-//     </div>
-//   );
-// }
+}
