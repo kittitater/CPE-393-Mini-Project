@@ -18,7 +18,7 @@ export default function Login() {
       await axios.post(`${API_BASE}/api/auth/login`, { email, password });
       setStep(2);
       setError('');
-    } catch {
+    } catch (err) {
       setError('⚠️ Invalid credentials.');
     }
   };
@@ -27,8 +27,14 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await axios.post(`${API_BASE}/api/auth/otp`, { email, otp });
-      localStorage.setItem('token', res.data.access_token);
-      router.push('/vote');
+      const token = res.data.access_token;
+      localStorage.setItem('token', token);
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      if (decoded.adm) {
+        router.push('/admin');
+      } else {
+        router.push('/vote');
+      }
     } catch {
       setError('❌ Invalid OTP.');
     }

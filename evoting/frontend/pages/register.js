@@ -21,9 +21,7 @@ export default function Register() {
       setStep(2);
       setError('');
     } catch (err) {
-      console.error("Register error:", err.response?.data); // <-- LOG THIS
       const detail = err.response?.data?.detail;
-  
       if (detail === 'Email already in use') {
         setError('⚠️ This email is already registered. You can login instead.');
       } else {
@@ -32,14 +30,17 @@ export default function Register() {
     }
   };
 
-  
-
   const handleOtpVerify = async (e) => {
     e.preventDefault();
     try {
       const res = await axios.post(`${API_BASE}/api/auth/register/verify`, { email, otp });
       localStorage.setItem('token', res.data.access_token);
-      router.push('/vote');
+      const decoded = JSON.parse(atob(res.data.access_token.split('.')[1]));
+      if (decoded.adm) {
+        router.push('/admin');
+      } else {
+        router.push('/vote');
+      }
     } catch {
       setError('❌ Invalid OTP.');
     }
@@ -50,20 +51,20 @@ export default function Register() {
       <div className="max-w-md mx-auto mt-12 p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/10">
         <h2 className="text-3xl text-cyber mb-6 text-center animate-glow">Register</h2>
         {error && (
-  <div className="text-red-500 text-center mb-4">
-    {error}
-    {(error.includes("already registered") || error.includes("already in use")) && (
-      <div className="mt-2 text-sm">
-        <span
-          className="text-cyber hover:underline cursor-pointer"
-          onClick={() => router.push('/login')}
-        >
-          ➜ Go to Login
-        </span>
-      </div>
-    )}
-  </div>
-)}
+          <div className="text-red-500 text-center mb-4">
+            {error}
+            {(error.includes("already registered") || error.includes("already in use")) && (
+              <div className="mt-2 text-sm">
+                <span
+                  className="text-cyber hover:underline cursor-pointer"
+                  onClick={() => router.push('/login')}
+                >
+                  ➜ Go to Login
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         {step === 1 ? (
           <form onSubmit={handleRegister} className="space-y-4">
             <input
