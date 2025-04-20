@@ -1,40 +1,40 @@
-import Head from 'next/head';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import Head from "next/head";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 export default function Layout({ children }) {
-  const [homeLink, setHomeLink] = useState('/');
+  const [homeLink, setHomeLink] = useState("/");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
       setIsLoggedIn(false);
-      setHomeLink('/');
+      setHomeLink("/");
       return;
     }
 
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       const admin = payload?.is_admin === true || payload?.is_admin === "true";
       setIsAdmin(admin);
       setIsLoggedIn(true);
-      setHomeLink(admin ? '/admin' : '/vote');
+      setHomeLink(admin ? "/admin" : "/vote");
     } catch {
       setIsLoggedIn(false);
-      setHomeLink('/');
+      setHomeLink("/");
     }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);       // 💡 ensure UI updates immediately
+    localStorage.removeItem("token");
+    setIsLoggedIn(false); // 💡 ensure UI updates immediately
     setIsAdmin(false);
-    setHomeLink('/');
-    router.push('/');
+    setHomeLink("/");
+    router.push("/");
   };
 
   return (
@@ -47,11 +47,23 @@ export default function Layout({ children }) {
 
       {/* HEADER */}
       <header className="relative bg-white/5 backdrop-blur-md py-5 px-6 shadow-md border-b border-white/10 animate-glow">
-        <div className="max-w-6xl mx-auto relative flex items-center justify-center">
+        <div className="max-w-6xl space-x-3 mx-auto relative flex items-center justify-between">
+          {/* Smart back button */}
+          <Link href={homeLink} passHref>
+            <div className=" gap-1 flex items-center bg-cyber text-cyber-dark font-semibold text-sm px-2 py-1 sm:text-base sm:px-4 sm:py-1.5 rounded shadow hover:bg-white hover:text-cyber transition ">
+              <svg
+                className="w-4 h-4 sm:w-6 sm:h-6 fill-current"
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 2L2 9h2v9h5v-5h2v5h5V9h2L10 2z" />
+              </svg>
+              <span>BACK</span>
+            </div>
+          </Link>
 
           {/* Conditionally clickable title */}
           {isLoggedIn ? (
-            <h1 className="text-3xl sm:text-4xl text-cyber font-bold tracking-widest animate-glow text-center select-none">
+            <h1 className="text-sm sm:text-4xl text-cyber font-bold tracking-widest animate-glow text-center select-none">
               E‑VOTING SYSTEM
             </h1>
           ) : (
@@ -63,28 +75,18 @@ export default function Layout({ children }) {
           )}
 
           {/* Top right controls */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
 
-            {/* Smart back button */}
-            <Link href={homeLink} passHref>
-              <div className="inline-flex items-center gap-2 text-cyber text-sm sm:text-base font-semibold tracking-wider hover:text-white transition cursor-pointer">
-                <svg className="w-5 h-5 fill-current animate-pulse" viewBox="0 0 20 20">
-                  <path d="M10 2L2 9h2v9h5v-5h2v5h5V9h2L10 2z" />
-                </svg>
-                <span>Back to Home</span>
-              </div>
-            </Link>
+          {/* Smart back button */}
 
-            {/* Logout - only when logged in */}
-            {isLoggedIn && (
-              <button
-                onClick={handleLogout}
-                className="ml-3 bg-cyber text-cyber-dark font-semibold px-4 py-1.5 rounded shadow hover:bg-white hover:text-cyber transition"
-              >
-                Logout
-              </button>
-            )}
-          </div>
+          {/* Logout - only when logged in */}
+          {isLoggedIn && (
+            <button
+              onClick={handleLogout}
+              className=" bg-cyber text-cyber-dark font-semibold text-sm px-2 py-1 sm:text-base sm:px-4 sm:py-1.5 rounded shadow hover:bg-white hover:text-cyber transition"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </header>
 
