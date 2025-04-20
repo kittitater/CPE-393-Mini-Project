@@ -134,3 +134,14 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
+
+
+
+database.txt
+Dockerfile
+dot.env.local
+init.sql
+paillier_keys.pkl
+.ipynb_checkpoints

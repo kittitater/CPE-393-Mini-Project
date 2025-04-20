@@ -1,7 +1,6 @@
-
-# backend/app/security/jwt.py
 import jwt
 from datetime import datetime, timedelta
+from fastapi import Header, HTTPException
 from app.core.config import settings
 
 def create_token(sub: str, is_admin: bool = False, expires_delta: timedelta = None) -> str:

@@ -1,7 +1,13 @@
+-- Step 1: Create the database
 CREATE DATABASE evoting;
-\connect evoting;
 
+-- Step 2: Connect to the database
+connect evoting;
+
+-- Step 3: Enable uuid-ossp extension (optional but useful)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Step 4: Create tables
 
 CREATE TABLE elections (
   id         SERIAL PRIMARY KEY,

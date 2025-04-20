@@ -1,4 +1,3 @@
-# backend/app/utils/emailer.py
 import aiosmtplib
 from email.message import EmailMessage
 from app.core.config import settings
