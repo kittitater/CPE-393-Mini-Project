@@ -64,14 +64,14 @@ export default function Layout({ children }) {
           {/* Conditionally clickable title */}
           {isLoggedIn ? (
             <h1 className="text-sm sm:text-4xl text-cyber font-bold tracking-widest animate-glow text-center select-none">
-              E‑VOTING SYSTEM
+              SECURE E‑VOTING SYSTEM
             </h1>
           ) : (
-            <Link href="/" passHref>
-              <h1 className="cursor-pointer text-3xl sm:text-4xl text-cyber font-bold tracking-widest animate-glow text-center hover:text-white transition">
-                E‑VOTING SYSTEM
+            <a href="/" passHref>
+              <h1 className="cursor-pointer text-lg sm:text-4xl text-cyber font-bold tracking-widest animate-glow text-center hover:text-white transition">
+              SECURE E‑VOTING SYSTEM
               </h1>
-            </Link>
+            </a>
           )}
 
           {/* Top right controls */}
@@ -79,13 +79,19 @@ export default function Layout({ children }) {
           {/* Smart back button */}
 
           {/* Logout - only when logged in */}
-          {isLoggedIn && (
+          {isLoggedIn ? (
             <button
               onClick={handleLogout}
               className=" bg-cyber text-cyber-dark font-semibold text-sm px-2 py-1 sm:text-base sm:px-4 sm:py-1.5 rounded shadow hover:bg-white hover:text-cyber transition"
             >
               Logout
             </button>
+          ) : (
+           
+              <div className="text-bg-gradient-radial bg-gradient-radial from-cyber-bg via-cyber-dark to-[#0f172a] font-semibold text-sm px-5 py-1 sm:text-base sm:px-4 sm:py-1.5  ">
+                     
+              </div>
+            
           )}
         </div>
       </header>
@@ -97,7 +103,7 @@ export default function Layout({ children }) {
 
       {/* FOOTER */}
       <footer className="bg-white/5 backdrop-blur-md py-4 text-center text-sm text-gray-400 tracking-wider border-t border-white/10 animate-glow">
-        © {new Date().getFullYear()} Roverant Cyber Voting • All Rights Reserved
+        © {new Date().getFullYear()} Roverant Development Group • All Rights Reserved
       </footer>
     </div>
   );
