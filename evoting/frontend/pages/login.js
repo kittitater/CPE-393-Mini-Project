@@ -36,6 +36,7 @@ export default function Login() {
     setLoading(true);
     try {
       await axios.post(`${API_BASE}/api/auth/login`, { email, password });
+      localStorage.setItem('email', email); // ✅ STORE HERE
       setStep(2);
       setError('');
     } catch (err) {
@@ -43,6 +44,7 @@ export default function Login() {
     }
     setLoading(false);
   };
+  
 
   const handleOtp = async (e) => {
     e.preventDefault();
@@ -50,11 +52,12 @@ export default function Login() {
     try {
       const res = await axios.post(`${API_BASE}/api/auth/otp`, { email, otp });
       const token = res.data.access_token;
-
+  
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', token);
+        localStorage.setItem('email', email); // ✅ Save email for vote OTP
       }
-
+  
       const decoded = JSON.parse(atob(token.split('.')[1]));
       if (decoded.adm) {
         router.replace('/admin');
@@ -66,7 +69,7 @@ export default function Login() {
     }
     setLoading(false);
   };
-
+  
   return (
     <Layout>
       <div className="max-w-md mx-auto mt-12 p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/10">

@@ -16,14 +16,12 @@ export default function Vote() {
   const [results, setResults] = useState([]);
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
-      router.replace('/login');
-      return;
-    }
+    if (!token) return router.replace('/login');
 
     axios
       .get(`${API_BASE}/api/vote/elections`, {
@@ -33,27 +31,26 @@ export default function Vote() {
         setElections(res.data);
         setIsReady(true);
       })
-      .catch(() => {
-        router.replace('/login');
-      });
+      .catch(() => router.replace('/login'));
   }, []);
 
   const loadCandidates = async (electionId) => {
     const token = localStorage.getItem('token');
     setSelectedElection(electionId);
+
     try {
       const res = await axios.get(`${API_BASE}/api/vote/candidates?election_id=${electionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCandidates(res.data);
 
-      const verifyRes = await axios.get(`${API_BASE}/api/vote/verify`, {
+      const verify = await axios.get(`${API_BASE}/api/vote/verify`, {
         params: { election_id: electionId },
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (verifyRes.data?.receipt) {
-        setReceipt(verifyRes.data.receipt);
+      if (verify.data?.receipt) {
+        setReceipt(verify.data.receipt);
         fetchResults(electionId);
         return;
       }
@@ -70,28 +67,51 @@ export default function Vote() {
     setStep(2);
   };
 
-  const verifyOtpAndVote = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const decoded = JSON.parse(atob(token.split('.')[1]));
-      const email = decoded.sub;
+  const verifyOtpAndCast = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-      const otpRes = await axios.post(`${API_BASE}/api/auth/otp`, { email, otp });
+    try {
+      const email = localStorage.getItem('email');
+if (!email || !otp) {
+  setError('❌ Missing email or OTP.');
+  setLoading(false);
+  return;
+}
+
+const otpRes = await axios.post(`${API_BASE}/api/auth/otp`, {
+  email,
+  otp,
+}, {
+  headers: {
+    'x-context': 'vote', // for vote logging/email
+  },
+});
+
+
       const newToken = otpRes.data.access_token;
       localStorage.setItem('token', newToken);
 
-      const res = await axios.post(
-        `${API_BASE}/api/vote/cast`,
-        { candidate_id: selectedCandidate },
-        { headers: { Authorization: `Bearer ${newToken}` } }
-      );
+      const res = await axios.post(`${API_BASE}/api/vote/cast`, {
+        candidate_id: selectedCandidate,
+      }, {
+        headers: { Authorization: `Bearer ${newToken}` },
+      });
 
       setReceipt(res.data.receipt);
       fetchResults(selectedElection);
       setError('');
-    } catch {
-      setError('❌ Invalid OTP or vote failed');
+    } catch (err) {
+      if (err.response?.status === 422) {
+        setError('❌ Missing email or OTP.');
+      } else if (err.response?.status === 400) {
+        setError('❌ Invalid OTP.');
+      } else {
+        setError('❌ Something went wrong.');
+      }
     }
+
+    setLoading(false);
   };
 
   const fetchResults = async (electionId = selectedElection) => {
@@ -109,14 +129,14 @@ export default function Vote() {
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto p-6 bg-glass-white rounded-xl shadow-lg border border-white/10">
-        <h2 className="text-3xl text-cyber text-center mb-6">🗳️ Cast Your Vote</h2>
+      <div className="max-w-md mx-auto mt-12 p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/10">
+        <h2 className="text-3xl text-cyber mb-6 text-center animate-glow">🗳️ Cast Your Vote</h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
         {!selectedElection ? (
           <>
             <h3 className="text-xl mb-4 text-center">Select Election</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {elections.map((e) => (
                 <button
                   key={e.id}
@@ -161,46 +181,48 @@ export default function Vote() {
           </div>
         ) : (
           <>
-            <h3 className="text-xl mb-4 text-center">Select Candidate</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {candidates.map((c) => (
-                <label
-                  key={c.id}
-                  className={`cursor-pointer p-4 rounded-lg border text-center font-semibold transition ${
-                    selectedCandidate === c.id
-                      ? 'border-cyber bg-cyber/20 text-cyber'
-                      : 'border-white/20 bg-white/5 hover:border-cyber'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="candidate"
-                    className="hidden"
-                    checked={selectedCandidate === c.id}
-                    onChange={() => setSelectedCandidate(c.id)}
-                  />
-                  {c.name}
-                </label>
-              ))}
-            </div>
-
             {step === 1 ? (
-              <button onClick={submitVote} className="btn w-full mt-6">
-                Submit Vote
-              </button>
+              <>
+                <h3 className="text-xl mb-4 text-center">Select Candidate</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {candidates.map((c) => (
+                    <label
+                      key={c.id}
+                      className={`cursor-pointer p-4 rounded-lg border text-center font-semibold transition ${
+                        selectedCandidate === c.id
+                          ? 'border-cyber bg-cyber/20 text-cyber'
+                          : 'border-white/20 bg-white/5 hover:border-cyber'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="candidate"
+                        className="hidden"
+                        checked={selectedCandidate === c.id}
+                        onChange={() => setSelectedCandidate(c.id)}
+                      />
+                      {c.name}
+                    </label>
+                  ))}
+                </div>
+                <button onClick={submitVote} className="btn w-full mt-6">
+                  Submit Vote
+                </button>
+              </>
             ) : (
-              <div className="mt-6 space-y-2">
+              <form onSubmit={verifyOtpAndCast} className="space-y-4 mt-6">
                 <input
                   type="text"
                   placeholder="Enter OTP"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber"
+                  required
+                  className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
                 />
-                <button onClick={verifyOtpAndVote} className="btn w-full">
-                  Verify & Confirm Vote
+                <button type="submit" className="btn w-full" disabled={loading}>
+                  {loading ? 'Verifying...' : 'Verify & Vote'}
                 </button>
-              </div>
+              </form>
             )}
           </>
         )}
