@@ -17,6 +17,7 @@ export default function Register() {
     e.preventDefault();
     try {
       const res = await axios.post(`${API_BASE}/api/auth/register`, { email, password });
+      localStorage.setItem('email', email); // ✅ store email for vote page
       setOtpUri(res.data.otp_uri);
       setStep(2);
       setError('');

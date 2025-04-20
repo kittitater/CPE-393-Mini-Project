@@ -9,7 +9,7 @@ export default function Vote() {
   const [isReady, setIsReady] = useState(false);
   const [elections, setElections] = useState([]);
   const [selectedElection, setSelectedElection] = useState(null);
-  const [candidates, setCandidates] = useState([]);
+ const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [receipt, setReceipt] = useState(null);
   const [error, setError] = useState('');
@@ -21,7 +21,8 @@ export default function Vote() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) return router.replace('/login');
+    const email = localStorage.getItem('email');
+    if (!token || !email) return router.replace('/login');
 
     axios
       .get(`${API_BASE}/api/vote/elections`, {
@@ -36,8 +37,9 @@ export default function Vote() {
 
   const loadCandidates = async (electionId) => {
     const token = localStorage.getItem('token');
-    setSelectedElection(electionId);
-
+    const electionInfo = elections.find(e => e.id === electionId);
+    setSelectedElection(electionInfo);
+    
     try {
       const res = await axios.get(`${API_BASE}/api/vote/candidates?election_id=${electionId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -73,21 +75,18 @@ export default function Vote() {
 
     try {
       const email = localStorage.getItem('email');
-if (!email || !otp) {
-  setError('❌ Missing email or OTP.');
-  setLoading(false);
-  return;
-}
+      if (!email || !otp) {
+        setError('❌ Missing email or OTP.');
+        setLoading(false);
+        return;
+      }
 
-const otpRes = await axios.post(`${API_BASE}/api/auth/otp`, {
-  email,
-  otp,
-}, {
-  headers: {
-    'x-context': 'vote', // for vote logging/email
-  },
-});
-
+      const otpRes = await axios.post(`${API_BASE}/api/auth/otp`, {
+        email,
+        otp,
+      }, {
+        headers: { 'x-context': 'vote' },
+      });
 
       const newToken = otpRes.data.access_token;
       localStorage.setItem('token', newToken);
@@ -121,8 +120,18 @@ const otpRes = await axios.post(`${API_BASE}/api/auth/otp`, {
       });
       setResults(res.data);
     } catch {
-      setError('❌ Failed to load results');
     }
+  };
+
+  const resetState = () => {
+    setSelectedElection(null);
+    setCandidates([]);
+    setSelectedCandidate(null);
+    setReceipt(null);
+    setResults([]);
+    setStep(1);
+    setOtp('');
+    setError('');
   };
 
   if (!isReady) return null;
@@ -154,6 +163,14 @@ const otpRes = await axios.post(`${API_BASE}/api/auth/otp`, {
             <p className="text-sm">Receipt Code:</p>
             <code className="bg-black/30 p-3 rounded block mt-2 mb-4">{receipt}</code>
 
+            {selectedElection?.public_vote_time && (
+  <p className="text-sm text-cyber mb-4">
+    Voting ends at:{" "}
+    {new Date(selectedElection.public_vote_time).toLocaleString()}
+  </p>
+)}
+
+
             <div className="mt-8">
               <h3 className="text-xl text-cyber mb-3">📊 Live Results</h3>
               <button
@@ -178,38 +195,61 @@ const otpRes = await axios.post(`${API_BASE}/api/auth/otp`, {
                 <p className="text-sm text-gray-300">No results yet.</p>
               )}
             </div>
+
+            {/* 🔙 Add back button */}
+            <span
+              onClick={resetState}
+              className="mt-6 text-cyber underline hover:text-white transition"
+            >
+              Back to Elections
+            </span>
           </div>
         ) : (
           <>
             {step === 1 ? (
-              <>
-                <h3 className="text-xl mb-4 text-center">Select Candidate</h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {candidates.map((c) => (
-                    <label
-                      key={c.id}
-                      className={`cursor-pointer p-4 rounded-lg border text-center font-semibold transition ${
-                        selectedCandidate === c.id
-                          ? 'border-cyber bg-cyber/20 text-cyber'
-                          : 'border-white/20 bg-white/5 hover:border-cyber'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="candidate"
-                        className="hidden"
-                        checked={selectedCandidate === c.id}
-                        onChange={() => setSelectedCandidate(c.id)}
-                      />
-                      {c.name}
-                    </label>
-                  ))}
-                </div>
-                <button onClick={submitVote} className="btn w-full mt-6">
-                  Submit Vote
-                </button>
-              </>
-            ) : (
+  <>
+    <h3 className="text-xl mb-2 text-center">Select Candidate</h3>
+
+    {selectedElection?.public_vote_time && (
+      <p className="text-sm text-cyber mb-4 text-center">
+        Voting ends at:{" "}
+        {new Date(selectedElection.public_vote_time).toLocaleString()}
+      </p>
+    )}
+
+    <div className="grid sm:grid-cols-2 gap-4">
+      {candidates.map((c) => (
+        <label
+          key={c.id}
+          className={`cursor-pointer p-4 rounded-lg border text-center font-semibold transition ${
+            selectedCandidate === c.id
+              ? 'border-cyber bg-cyber/20 text-cyber'
+              : 'border-white/20 bg-white/5 hover:border-cyber'
+          }`}
+        >
+          <input
+            type="radio"
+            name="candidate"
+            className="hidden"
+            checked={selectedCandidate === c.id}
+            onChange={() => setSelectedCandidate(c.id)}
+          />
+          {c.name}
+        </label>
+      ))}
+    </div>
+
+    <button onClick={submitVote} className="btn w-full mt-6">
+      Submit Vote
+    </button>
+    <span
+      onClick={resetState}
+      className="mt-6 text-cyber underline hover:text-white transition block text-center"
+    >
+      Back to Elections
+    </span>
+  </>
+) : (
               <form onSubmit={verifyOtpAndCast} className="space-y-4 mt-6">
                 <input
                   type="text"
