@@ -1,22 +1,23 @@
 {
-  "name": "evoting-frontend",
-  "version": "1.0.0",
+  "name": "temp-frontend",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "jest"
+    "lint": "next lint"
   },
   "dependencies": {
-    "axios": "^0.21.1",
-    "next": "12.0.7",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "tailwindcss": "^3.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "next": "15.3.1"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.14.1",
-    "@testing-library/react": "^12.1.2",
-    "jest": "^27.3.1"
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "@eslint/eslintrc": "^3"
   }
 }
