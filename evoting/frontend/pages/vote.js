@@ -37,14 +37,26 @@ export default function Vote() {
   }, [router]);
 
   const loadCandidates = async (electionId) => {
+    const token = localStorage.getItem('token');
     setSelectedElection(electionId);
     try {
       const res = await axios.get(`${API_BASE}/api/vote/candidates?election_id=${electionId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setCandidates(res.data);
+
+      // Check if user already voted
+      const verifyRes = await axios.get(`${API_BASE}/api/vote/verify`, {
+        params: { election_id: electionId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (verifyRes.data?.receipt) {
+        setReceipt(verifyRes.data.receipt);
+        fetchResults(electionId);
+      }
     } catch {
-      setError('❌ Failed to load candidates');
+      setError('❌ Failed to load candidates or check vote status');
     }
   };
 
@@ -58,15 +70,15 @@ export default function Vote() {
       );
       setReceipt(res.data.receipt);
       setError('');
-      fetchResults(); // Fetch results after vote
+      fetchResults(selectedElection);
     } catch {
       setError('❌ Failed to cast vote');
     }
   };
 
-  const fetchResults = async () => {
+  const fetchResults = async (electionId = selectedElection) => {
     try {
-      const res = await axios.get(`${API_BASE}/api/vote/results?election_id=${selectedElection}`, {
+      const res = await axios.get(`${API_BASE}/api/vote/results?election_id=${electionId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setResults(res.data);
@@ -107,7 +119,7 @@ export default function Vote() {
             <div className="mt-8">
               <h3 className="text-xl text-cyber mb-3">📊 Live Results</h3>
               <button
-                onClick={fetchResults}
+                onClick={() => fetchResults(selectedElection)}
                 className="btn mb-4 mx-auto block"
               >
                 Refresh Results
