@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
@@ -9,11 +9,31 @@ export default function Login() {
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const decoded = JSON.parse(atob(token.split('.')[1]));
+          if (decoded.adm) {
+            router.replace('/admin');
+          } else {
+            router.replace('/vote');
+          }
+        } catch {
+          localStorage.removeItem('token');
+        }
+      }
+    }
+  }, []);
+
   const handleCredentials = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await axios.post(`${API_BASE}/api/auth/login`, { email, password });
       setStep(2);
@@ -21,23 +41,30 @@ export default function Login() {
     } catch (err) {
       setError('⚠️ Invalid credentials.');
     }
+    setLoading(false);
   };
 
   const handleOtp = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await axios.post(`${API_BASE}/api/auth/otp`, { email, otp });
       const token = res.data.access_token;
-      localStorage.setItem('token', token);
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', token);
+      }
+
       const decoded = JSON.parse(atob(token.split('.')[1]));
       if (decoded.adm) {
-        router.push('/admin');
+        router.replace('/admin');
       } else {
-        router.push('/vote');
+        router.replace('/vote');
       }
-    } catch {
+    } catch (err) {
       setError('❌ Invalid OTP.');
     }
+    setLoading(false);
   };
 
   return (
@@ -64,7 +91,9 @@ export default function Login() {
               required
               className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
             />
-            <button className="btn w-full">Login</button>
+            <button type="submit" className="btn w-full" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
           </form>
         ) : (
           <form onSubmit={handleOtp} className="space-y-4">
@@ -76,7 +105,9 @@ export default function Login() {
               required
               className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber focus:outline-none focus:ring-2 focus:ring-cyber placeholder-cyber/50"
             />
-            <button className="btn w-full">Verify OTP</button>
+            <button type="submit" className="btn w-full" disabled={loading}>
+              {loading ? 'Verifying...' : 'Verify OTP'}
+            </button>
           </form>
         )}
 

@@ -14,6 +14,8 @@ export default function Vote() {
   const [receipt, setReceipt] = useState(null);
   const [error, setError] = useState('');
   const [results, setResults] = useState([]);
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState(1);
   const router = useRouter();
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export default function Vote() {
       .catch(() => {
         router.replace('/login');
       });
-  }, [router]);
+  }, []);
 
   const loadCandidates = async (electionId) => {
     const token = localStorage.getItem('token');
@@ -45,7 +47,6 @@ export default function Vote() {
       });
       setCandidates(res.data);
 
-      // Check if user already voted
       const verifyRes = await axios.get(`${API_BASE}/api/vote/verify`, {
         params: { election_id: electionId },
         headers: { Authorization: `Bearer ${token}` },
@@ -54,25 +55,42 @@ export default function Vote() {
       if (verifyRes.data?.receipt) {
         setReceipt(verifyRes.data.receipt);
         fetchResults(electionId);
+        return;
       }
+
+      setStep(1);
+      setReceipt(null);
     } catch {
       setError('❌ Failed to load candidates or check vote status');
     }
   };
 
-  const submitVote = async () => {
+  const submitVote = () => {
     if (!selectedCandidate) return setError('Please select a candidate.');
+    setStep(2);
+  };
+
+  const verifyOtpAndVote = async () => {
     try {
+      const token = localStorage.getItem('token');
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      const email = decoded.sub;
+
+      const otpRes = await axios.post(`${API_BASE}/api/auth/otp`, { email, otp });
+      const newToken = otpRes.data.access_token;
+      localStorage.setItem('token', newToken);
+
       const res = await axios.post(
         `${API_BASE}/api/vote/cast`,
         { candidate_id: selectedCandidate },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        { headers: { Authorization: `Bearer ${newToken}` } }
       );
+
       setReceipt(res.data.receipt);
-      setError('');
       fetchResults(selectedElection);
+      setError('');
     } catch {
-      setError('❌ Failed to cast vote');
+      setError('❌ Invalid OTP or vote failed');
     }
   };
 
@@ -165,7 +183,25 @@ export default function Vote() {
                 </label>
               ))}
             </div>
-            <button onClick={submitVote} className="btn w-full mt-6">Submit Vote</button>
+
+            {step === 1 ? (
+              <button onClick={submitVote} className="btn w-full mt-6">
+                Submit Vote
+              </button>
+            ) : (
+              <div className="mt-6 space-y-2">
+                <input
+                  type="text"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-[#1f2937] border border-cyber/30 text-cyber"
+                />
+                <button onClick={verifyOtpAndVote} className="btn w-full">
+                  Verify & Confirm Vote
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
