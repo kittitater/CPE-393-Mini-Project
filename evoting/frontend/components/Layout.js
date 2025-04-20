@@ -40,7 +40,7 @@ export default function Layout({ children }) {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-radial from-cyber-bg via-cyber-dark to-[#0f172a] text-white font-orbitron overflow-x-hidden">
       <Head>
-        <title>Secure E‑Voting</title>
+        <title>Secure E‑Voting System</title>
         <meta name="description" content="Secure futuristic voting system" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
