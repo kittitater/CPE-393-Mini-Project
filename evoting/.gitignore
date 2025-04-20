@@ -145,3 +145,7 @@ dot.env.local
 init.sql
 paillier_keys.pkl
 .ipynb_checkpoints
+node_modules
+.next
+.env.local
+.gitignore
