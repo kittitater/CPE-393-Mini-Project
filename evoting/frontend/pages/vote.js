@@ -166,5 +166,3 @@ const Vote = () => {
     </Layout>
   );
 };
-
-export default Vote;
