@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export default function Vote() {
   const [isReady, setIsReady] = useState(false);
   const [elections, setElections] = useState([]);
@@ -11,6 +13,7 @@ export default function Vote() {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [receipt, setReceipt] = useState(null);
   const [error, setError] = useState('');
+  const [results, setResults] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -21,7 +24,7 @@ export default function Vote() {
     }
 
     axios
-      .get('/api/vote/elections', {
+      .get(`${API_BASE}/api/vote/elections`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -36,7 +39,7 @@ export default function Vote() {
   const loadCandidates = async (electionId) => {
     setSelectedElection(electionId);
     try {
-      const res = await axios.get(`/api/vote/candidates?election_id=${electionId}`, {
+      const res = await axios.get(`${API_BASE}/api/vote/candidates?election_id=${electionId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setCandidates(res.data);
@@ -49,13 +52,26 @@ export default function Vote() {
     if (!selectedCandidate) return setError('Please select a candidate.');
     try {
       const res = await axios.post(
-        '/api/vote/cast',
+        `${API_BASE}/api/vote/cast`,
         { candidate_id: selectedCandidate },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
       setReceipt(res.data.receipt);
+      setError('');
+      fetchResults(); // Fetch results after vote
     } catch {
       setError('❌ Failed to cast vote');
+    }
+  };
+
+  const fetchResults = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/vote/results?election_id=${selectedElection}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setResults(res.data);
+    } catch {
+      setError('❌ Failed to load results');
     }
   };
 
@@ -86,7 +102,32 @@ export default function Vote() {
           <div className="text-center">
             <h3 className="text-green-400 text-xl mb-3">✅ Vote Cast Successfully</h3>
             <p className="text-sm">Receipt Code:</p>
-            <code className="bg-black/30 p-3 rounded block mt-2">{receipt}</code>
+            <code className="bg-black/30 p-3 rounded block mt-2 mb-4">{receipt}</code>
+
+            <div className="mt-8">
+              <h3 className="text-xl text-cyber mb-3">📊 Live Results</h3>
+              <button
+                onClick={fetchResults}
+                className="btn mb-4 mx-auto block"
+              >
+                Refresh Results
+              </button>
+              {results.length > 0 ? (
+                <ul className="text-white space-y-2">
+                  {results.map((r) => {
+                    const name = candidates.find((c) => c.id === r.candidate_id)?.name || 'Unknown';
+                    return (
+                      <li key={r.candidate_id} className="bg-white/10 p-3 rounded-lg flex justify-between">
+                        <span>{name}</span>
+                        <span className="text-cyber font-bold">{r.count} vote(s)</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-300">No results yet.</p>
+              )}
+            </div>
           </div>
         ) : (
           <>
