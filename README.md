@@ -4,6 +4,8 @@ A secure, web-based e-voting platform built with **FastAPI**, **PostgreSQL**, an
 
 Developed for **CPE393: Fundamentals of Cybersecurity (Mini Project A1)**.
 
+Developed By **Roverant Development Group**.
+
 ---
 
 ## 🔐 Features
