@@ -1,10 +1,10 @@
-// pages/vote.js
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 
 export default function Vote() {
+  const [isReady, setIsReady] = useState(false);
   const [elections, setElections] = useState([]);
   const [selectedElection, setSelectedElection] = useState(null);
   const [candidates, setCandidates] = useState([]);
@@ -14,14 +14,22 @@ export default function Vote() {
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.replace('/login');
+      return;
+    }
+
     axios
       .get('/api/vote/elections', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setElections(res.data))
+      .then((res) => {
+        setElections(res.data);
+        setIsReady(true);
+      })
       .catch(() => {
-        setError('⚠️ Failed to load elections. Login again.');
-        router.push('/login');
+        router.replace('/login');
       });
   }, [router]);
 
@@ -50,6 +58,8 @@ export default function Vote() {
       setError('❌ Failed to cast vote');
     }
   };
+
+  if (!isReady) return null;
 
   return (
     <Layout>

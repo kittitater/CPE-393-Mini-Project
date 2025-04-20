@@ -1,9 +1,10 @@
-// pages/admin.js
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
+import { useRouter } from 'next/router';
 
 export default function Admin() {
+  const [isReady, setIsReady] = useState(false);
   const [elections, setElections] = useState([]);
   const [newElection, setNewElection] = useState('');
   const [selectedElection, setSelectedElection] = useState(null);
@@ -11,16 +12,18 @@ export default function Admin() {
   const [newCandidate, setNewCandidate] = useState('');
   const [results, setResults] = useState([]);
   const [error, setError] = useState('');
+  const router = useRouter();
 
-  const token = localStorage.getItem('token');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const headers = { Authorization: `Bearer ${token}` };
 
   const refreshElections = async () => {
     try {
       const res = await axios.get('/api/admin/elections', { headers });
       setElections(res.data);
+      setIsReady(true);
     } catch {
-      setError('❌ Cannot load elections');
+      router.replace('/login');
     }
   };
 
@@ -60,6 +63,8 @@ export default function Admin() {
   useEffect(() => {
     refreshElections();
   }, []);
+
+  if (!isReady) return null;
 
   return (
     <Layout>
