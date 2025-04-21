@@ -62,7 +62,7 @@ CPE-393-Mini-Project/
 1. **Clone & enter backend directory**
 
    ```bash
-   git clone https://github.com/YOUR-ORG/CPE-393-Mini-Project.git
+   git clone https://github.com/kittitater/CPE-393-Mini-Project.git
    cd CPE-393-Mini-Project/backend
    ```
 
