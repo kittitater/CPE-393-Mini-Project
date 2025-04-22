@@ -1,8 +1,8 @@
 -- Step 1: Create the database
-CREATE DATABASE evoting;
+CREATE DATABASE evoting_db;
 
 -- Step 2: Connect to the database
-connect evoting;
+connect evoting_db;
 
 -- Step 3: Enable uuid-ossp extension (optional but useful)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
